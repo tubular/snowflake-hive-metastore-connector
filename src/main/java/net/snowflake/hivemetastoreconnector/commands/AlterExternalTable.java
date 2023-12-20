@@ -180,9 +180,9 @@ public class AlterExternalTable extends Command
 
   public List<String> generateRefreshTableSqlQueries()
   {
-      return ImmutableList.of(
-         String.format("ALTER EXTERNAL TABLE IF EXISTS %s REFRESH;",
-             StringUtil.escapeSqlIdentifier(newHiveTable.getTableName())));
+    return ImmutableList.of(
+        String.format("ALTER EXTERNAL TABLE IF EXISTS %s REFRESH;",
+            StringUtil.escapeSqlIdentifier(newHiveTable.getTableName())));
   }
 
   /**
@@ -255,9 +255,19 @@ public class AlterExternalTable extends Command
                                                 snowflakeConf));
     }
 
-    if (!Objects.equal(oldHiveTable.getSd().getLocation(), newHiveTable.getSd().getLocation())) {
+    if (!Objects.equal(oldHiveTable.getSd().getLocation(), newHiveTable.getSd().getLocation()))
+    {
       commands.addAll(generateAlterStageSetURLSqlQueries());
       commands.addAll(generateRefreshTableSqlQueries());
+    }
+    else
+    {
+	String message = String.format("old %s[location=%s] -> new %s[location=%s]",
+				       oldHiveTable.getTableName(),
+				       oldHiveTable.getSd().getLocation(),
+				       newHiveTable.getTableName(),
+				       newHiveTable.getSd().getLocation());
+	commands.addAll(new LogCommand(oldHiveTable, message).generateSqlQueries());
     }
 
     return commands;
